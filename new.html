@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canvas Animation</title>
+    <style>
+      @font-face {
+        font-family: NHDL;
+        src: url(./NeueHaasDisplayLight.ttf);
+      }
+      html.lenis,
+      html.lenis body {
+        height: auto;
+      }
+
+      .lenis.lenis-smooth {
+        scroll-behavior: auto !important;
+      }
+
+      .lenis.lenis-smooth [data-lenis-prevent] {
+        overscroll-behavior: contain;
+      }
+
+      .lenis.lenis-stopped {
+        overflow: hidden;
+      }
+
+      .lenis.lenis-smooth iframe {
+        pointer-events: none;
+      }
+
+      .hover-svg {
+        display: none;
+        position: absolute;
+        top: 20%;
+        left: 40%;
+        width: 100px;
+        height: 100px;
+        z-index: 20;
+      }
+
+      /* Display and position the SVG on hover */
+      .hover-text:hover + .hover-svg {
+        display: block;
+        animation: fadeIn 0.5s forwards;
+        width: 100px;
+        height: 100px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      #navbar .nav-link {
+        color: white; /* Default color */
+      }
+
+      #navbar.scrolled .nav-link {
+        color: black; /* Color when scrolled */
+      }
+
+      #navbar.scrolled #ball {
+        background-color: black; /* Color when scrolled */
+      }
+
+      #loader {
+        width: 100%;
+        height: 100vh;
+        background-color: black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        z-index: 50;
+      }
+
+      .paragraph {
+        font-family: NHDL;
+      }
+
+      footer {
+        font-family: NHDL;
+      }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <main class="z-10 relative">
+      <div id="loader">
+        <video
+          class="absolute w-[50%] h-[300px]"
+          src="./loadDoze.mp4"
+          autoplay
+          loop
+          muted
+        ></video>
+        <!-- <p class="absolute bottom-20 text-white">Swipe Down</p>
+            <div class="absolute bottom-0"><img src="./Effect/down.png" alt=""></div> -->
+      </div>
+      <nav
+        id="navbar"
+        class="flex justify-between items-center p-4 bg-transparent fixed top-0 left-0 w-full z-20"
+      >
+        <!-- Left Side - Logo -->
+        <div class="flex items-center justify-center space-x-2">
+          <span
+            class="nav-link text-white text-lg md:text-xl lg:text-2xl text-bold"
+            >Doze — Studio</span
+          >
+          <span
+            id="ball"
+            class="nav-link inline-block w-4 h-4 bg-white rounded-full"
+          ></span>
+        </div>
+
+        <!-- Center - Links -->
+        <div
+          class="hidden sm:flex flex-1 justify-center space-x-4 md:space-x-6 lg:space-x-8"
+        >
+          <a
+            href="#"
+            class="nav-link text-white text-sm md:text-base lg:text-lg hover:underline"
+            >Projects</a
+          >
+          <a
+            href="#"
+            class="nav-link text-white text-sm md:text-base lg:text-lg hover:underline"
+            >About</a
+          >
+          <a
+            href="#"
+            class="nav-link text-white text-sm md:text-base lg:text-lg hover:underline"
+            >Labs</a
+          >
+        </div>
+
+        <!-- Right Side - Button -->
+        <div class="flex items-center space-x-2 md:space-x-4">
+          <a
+            href="#"
+            class="nav-link text-white text-sm md:text-base lg:text-lg hover:underline"
+            >Let's Talk</a
+          >
+        </div>
+      </nav>
+
+      <div class="w-full bg-zinc-900">
+        <div id="parent" class="relative top-0 left-0 w-full h-[2100vh]">
+          <div class="w-full sticky top-0 left-0 h-screen overflow-x-hidden">
+            <canvas class="w-full h-screen" id="frame"></canvas>
+            <div
+              class="absolute animate1 z-[2] text-white bottom-10 w-full md:w-2/3 lg:w-1/2 left-4 md:left-8 lg:left-10"
+            >
+              <h1
+                class="leading-tight font-light text-xl sm:text-2xl md:text-3xl lg:text-4xl"
+              >
+                &copy; 2024 DOZE STD
+              </h1>
+              <h1 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl">
+                SHAPING BRANDS → CRAFTING MOTION
+              </h1>
+            </div>
+
+            <div
+              class="absolute animate2 flex z-[2] text-white bottom-10 w-1/2 right-10 text-right opacity-0"
+            >
+              <h1 class="leading-20 font-[100] uppercase text-6xl">
+                Transforming Visions
+              </h1>
+              <h1 class="text-xl w-1/2">
+                Building identity and inspiring action. Sculpting digital
+                experiences the resonate.
+              </h1>
+            </div>
+            <div
+              class="absolute animate3 z-[2] text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center opacity-0"
+            >
+              <h1 class="leading-20 font-[100] uppercase text-6xl">
+                Elevating Aesthetics
+              </h1>
+              <h1 class="text-xl">
+                Crafting solutions and exploring new horizons. Evolving
+                narratives and elevating aesthetics in every project.
+              </h1>
+            </div>
+            <div
+              class="w-1/3 panel translate-x-full h-screen bg-white absolute right-0 top-0 z-[2] p-10"
+            >
+              <h3 class="panelelem text-xl font-[100]">©️ 2024 Doze.Std</h3>
+              <p class="panelelem mt-10 text-xl">
+                Sculpting digital Transforming visions into digital realities.
+                Weaving stories that captivate and innovate. Exploring new
+                possibilities with a focus on narrative evolution. Crafting
+                solutions that engage and elevate.
+              </p>
+              <button
+                class="panelelem border-[1px] px-3 py-2 border-[#555] font-[100] mt-6"
+              >
+                Get Reviews ->
+              </button>
+              <div class="panelelem absolute bottom-10">
+                <h3 class="text-xl">Innovating Design</h3>
+                <p class="text-sm mt-3">
+                  Connecting ideas to foster creativity. Designing impactful
+                  experiences that resonate. Feel free to mix and match these
+                  sections to suit your website's design needs!
+                </p>
+                <button
+                  class="bg-black text-white px-7 text-sm mt-4 py-4 font-[100] capitalize"
+                >
+                  experience
+                </button>
+              </div>
+            </div>
+            <div
+              class="absolute z-[2] panelism text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-6xl tracking-tighter opacity-0"
+            >
+              &copy;Panelism
+              <span class="line w-10 h-1 bg-white inline-block"></span> 2048
+            </div>
+          </div>
+        </div>
+        <div class="flex relative" id="section2">
+          <!-- <div
+            class="cursor absolute z-100 w-[20px] h-[20px] rounded-full bg-black pointer-events-none transform -translate-x-1/2 -translate-y-1/2"
+            id="cursor"
+          ></div> -->
+          <div
+            class="w-6/12 bg-white px-10 flex flex-col justify-start relative"
+          >
+            <!-- Image/Logo Container -->
+            <div class="sticky top-10">
+              <div
+                class="bg-black mt-28 flex justify-center items-center w-6/12 h-72"
+              >
+                <img
+                  src="./Effect/Img_1.jpg"
+                  alt="Logo"
+                  class="work-image object-cover w-full h-full transition-all ease-in duration-30"
+                />
+              </div>
+
+              <!-- Text Section -->
+              <div class="mt-4 mb-32">
+                <h2 class="text-lg font-bold">Branding & Identity</h2>
+                <p
+                  class="text-sm mt-2 text-gray-600 work-para w-[70%] transition-all ease-in duration-30 paragraph"
+                >
+                  This project involved the creation of a special alphabet using
+                  signs and flags designed specifically for the band. The video
+                  features a monumental set design that blurs the lines between
+                  an aerial installation and an epileptic visual spectacle,
+                  enhancing the immersive experience of the music.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="works w-6/12 px-12 py-32 bg-white relative">
+            <h1 class="text-6xl tracking-tighter">&reg; Our Recent Works.</h1>
+            <div
+              class="w-1/2 p-3 headings mt-32 flex flex-col justify-center gap-10 paragraph"
+            >
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Zonk Blerp
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Flibble Sprock
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Wibble Zurf
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Quarn Blap
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Fuzzle Droop
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Blizzy Nerp
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Frizzle Bump
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Plonk Zorp
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Slibber Klop
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Glonk Dribble
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Twizzle Blurb
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Skribble Zink
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Quibble Plop
+              </h3>
+              <h3
+                data-img=""
+                data-text=""
+                class="text-5xl opacity-10 cursor-pointer transition-all ease-in duration-30"
+              >
+                Krinle Splap
+              </h3>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="w-full h-72"></div>
+    </main>
+    <footer class="bg-black text-white p-6 z-9 fixed bottom-0 w-full">
+      <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+        <!-- Project Inquiries Section -->
+        <div>
+          <h3 class="text-xl font-semibold">PROJECT INQUIRES</h3>
+          <p class="mt-4 text-sm">Ready to work with us?</p>
+          <p class="text-sm">
+            Reach out to discuss how we can help you build a strong digital
+            brand presence.
+          </p>
+          <p class="mt-4 text-sm">
+            <a href="mailto:hello@doze-studio.com" class="underline"
+              >hello@doze-studio.com</a
+            >
+          </p>
+        </div>
+        <!-- Our Office Section -->
+        <div>
+          <h3 class="text-xl font-semibold">OUR OFFICE</h3>
+          <p class="mt-4 text-sm">Doze Studio</p>
+          <p class="text-sm">1b rue Baron</p>
+          <p class="text-sm">44000 Nantes</p>
+          <p class="text-sm">France</p>
+        </div>
+        <!-- Networks Section -->
+        <div class="flex flex-col items-end">
+          <h3 class="text-xl font-semibold">NETWORKS</h3>
+          <p class="mt-4 text-sm">+33 2 85 52 19 62</p>
+          <div class="flex flex-col space-y-2 mt-4 text-sm text-right">
+            <a href="#" class="underline">Instagram</a>
+            <a href="#" class="underline">LinkedIn</a>
+            <a href="#" class="underline">Giphy</a>
+          </div>
+        </div>
+      </div>
+      <div class="container mx-auto flex justify-between mt-10">
+        <!-- Logo Section -->
+        <div>
+          <img src="footer-lg.png" alt="Doze Studio Logo" class="w-12 h-12" />
+        </div>
+        <!-- Legals Link -->
+        <div class="text-sm">
+          <a href="#" class="underline">Legals</a>
+        </div>
+      </div>
+    </footer>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
+      integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"
+      integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+
+    <script src="https://unpkg.com/lenis@1.1.10/dist/lenis.min.js"></script>
+    <script>
+      const canvas = document.querySelector("canvas");
+      const context = canvas.getContext("2d");
+
+      const frames = {
+        currentIndex: 0,
+        maxIndex: 2152,
+      };
+
+      let tz = gsap.timeline();
+      tz.to(
+        "#loader",
+        {
+          height: "0%",
+          delay: 1,
+          duration: 3,
+          ease: Power3.easeInOut,
+        },
+        "video"
+      ).to(
+        "#loader video",
+        {
+          // height: "0%",
+          scale: 0,
+          delay: 1,
+          duration: 3,
+          ease: Power3.easeInOut,
+        },
+        "video"
+      );
+
+      let imagesLoaded = 0;
+      const images = [];
+
+      function preloadImages() {
+        for (let i = 1; i <= frames.maxIndex; i++) {
+          const imageUrl = `./compressed_images/frame_${i
+            .toString()
+            .padStart(4, "0")}.jpg`;
+          const img = new Image();
+          img.src = imageUrl;
+          img.onload = () => {
+            imagesLoaded++;
+            if (imagesLoaded === frames.maxIndex) {
+              loadImage(frames.currentIndex);
+              startAnimation();
+            }
+          };
+          images.push(img);
+        }
+      }
+
+      function loadImage(index) {
+        if (index >= 0 && index <= frames.maxIndex) {
+          const img = images[index];
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+
+          const scaleX = canvas.width / img.width;
+          const scaleY = canvas.height / img.height;
+          const scale = Math.max(scaleX, scaleY);
+
+          const newWidth = img.width * scale;
+          const newHeight = img.height * scale;
+
+          const offsetX = (canvas.width - newWidth) / 2;
+          const offsetY = (canvas.height - newHeight) / 2;
+
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          context.imageSmoothingEnabled = true;
+          context.imageSmoothingQuality = "high";
+          context.drawImage(img, offsetX, offsetY, newWidth, newHeight);
+          frames.currentIndex = index;
+        }
+      }
+
+      function startAnimation() {
+        var tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: "#parent",
+            start: "top top",
+            scrub: 2,
+            markers: false,
+            end: "bottom bottom",
+          },
+        });
+
+        function updateFrame(index) {
+          return {
+            currentIndex: index,
+            ease: "linear",
+            onUpdate: function () {
+              loadImage(Math.floor(frames.currentIndex));
+            },
+          };
+        }
+
+        tl.to(frames, updateFrame(134), "first")
+          .to(".animate1", { opacity: 0, ease: "linear" }, "first")
+
+          .to(frames, updateFrame(268), "second")
+          .to(".animate2", { opacity: 1, ease: "linear" }, "second")
+
+          .to(frames, updateFrame(402), "third")
+          .to(".animate2", { opacity: 1, ease: "linear" }, "third")
+
+          .to(frames, updateFrame(536), "fourth")
+          .to(".animate2", { opacity: 0, ease: "linear" }, "fourth")
+
+          .to(frames, updateFrame(670), "fifth")
+          .to(".animate3", { opacity: 1, ease: "linear" }, "fifth")
+
+          .to(frames, updateFrame(804), "sixth")
+          .to(".animate3", { opacity: 1, ease: "linear" }, "sixth")
+
+          .to(frames, updateFrame(938), "seventh")
+          .to(".animate3", { opacity: 0, ease: "linear" }, "seventh")
+
+          .to(frames, updateFrame(1072), "eighth")
+          .to(".panel", { x: "0%", ease: "expo" }, "eighth")
+
+          .to(frames, updateFrame(1206), "ninth")
+          .to(".panel", { x: "0%", ease: "expo" }, "ninth")
+
+          .to(frames, updateFrame(1340), "tenth")
+          .to(".panel", { opacity: 0, ease: "linear" }, "tenth")
+
+          .to(frames, updateFrame(1474), "eleventh")
+          .to("canvas", { scale: 0.5, ease: "expo" }, "eleventh")
+
+          .to(frames, updateFrame(1608), "twelvth")
+          .to(".panelism", { opacity: 1, ease: "expo" }, "twelvth")
+
+          .to(frames, updateFrame(1742), "twelvth")
+          .to(".panelism span", { width: 200, ease: "expo" }, "twelvth")
+
+          .to(frames, updateFrame(1876), "thirteen")
+          .to("canvas", { scale: 1, ease: "expo" }, "thirteen")
+
+          .to(frames, updateFrame(2010), "fourteen")
+          .to(".panelism", { opacity: 2, ease: "circ" }, "fourteen")
+
+          .to(frames, updateFrame(2151), "fifteen")
+          .to(".panelism", { opacity: 2, ease: "circ" }, "fifteen");
+      }
+
+      window.addEventListener("resize", function () {
+        loadImage(Math.floor(frames.currentIndex));
+      });
+
+      const lenis = new Lenis();
+
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+
+      requestAnimationFrame(raf);
+
+      preloadImages();
+
+      // document.querySelectorAll(".headings h3")
+      // .forEach(function(elem){
+      //     gsap.from(elem,{
+      //         scrollTrigger:{
+      //             trigger: elem,
+      //             start: "top 90%",
+      //             bottom: "bottom 20%",
+      //             scrub: 2,
+
+      //         },
+      //         opacity: .1,
+      //         delay: 0
+      //     })
+      // })
+
+      const Data = [
+        {
+          imgSrc: `./Effect/Img_1.jpg`,
+          text: "This project involved the creation of a special alphabet using signs and flags designed specifically for the band. The video features a monumental set design that blurs the lines between an aerial installation and an epileptic visual spectacle.",
+        },
+        {
+          imgSrc: `./Effect/Img_2.jpg`,
+          text: "This image captures the serene beauty of nature, where the vibrant hues of the landscape come alive in perfect harmony with the tranquil surroundings.",
+        },
+        {
+          imgSrc: `./Effect/Img_3.jpg`,
+          text: "A moment frozen in time, this photograph tells a story of solitude and reflection, inviting viewers to lose themselves in its quiet depth.",
+        },
+        {
+          imgSrc: `./Effect/Img_4.jpg`,
+          text: "The energy of the city is palpable in this image, where the hustle and bustle of urban life is painted with a dynamic blend of colors and movement.",
+        },
+        {
+          imgSrc: `./Effect/Img_5.jpg`,
+          text: "A glimpse into a world of imagination, this image transports you to a place where creativity knows no bounds and dreams take flight.",
+        },
+        {
+          imgSrc: `./Effect/Img_6.jpg`,
+          text: "This photograph beautifully captures the essence of minimalism, where simplicity speaks volumes through clean lines and subtle contrasts.",
+        },
+        {
+          imgSrc: `./Effect/Img_7.jpg`,
+          text: "In this image, the delicate interplay of light and shadow creates a mesmerizing effect, drawing the eye to the intricate details within.",
+        },
+        {
+          imgSrc: `./Effect/Img_8.jpg`,
+          text: "The raw power of nature is on full display here, as the elements come together in a dramatic scene that is both awe-inspiring and humbling.",
+        },
+        {
+          imgSrc: `./Effect/Img_9.jpg`,
+          text: "This image invites you to pause and appreciate the quiet beauty of the everyday, where even the most ordinary moments hold extraordinary charm.",
+        },
+        {
+          imgSrc: `./Effect/Img_10.jpg`,
+          text: "A celebration of color and form, this photograph is a visual feast that delights the senses with its bold composition and vibrant palette.",
+        },
+        {
+          imgSrc: `./Effect/Img_11.jpg`,
+          text: "This image captures the essence of adventure, where the open road beckons and the horizon is filled with endless possibilities.",
+        },
+        {
+          imgSrc: `./Effect/Img_12.jpg`,
+          text: "The beauty of human connection is at the heart of this photograph, where a simple gesture speaks of love, trust, and shared experiences.",
+        },
+        {
+          imgSrc: `./Effect/Img_13.jpg`,
+          text: "A masterful blend of nature and architecture, this image showcases how the built environment can seamlessly coexist with the natural world, creating a scene of perfect balance.",
+        },
+        {
+          imgSrc: `./Effect/Img_14.jpg`,
+          text: "This image reflects the tranquil beauty of a quiet moment, where stillness and calm create a serene atmosphere.",
+        },
+      ];
+
+      const elements = document.querySelectorAll(".works h3");
+      const WorkImg = document.querySelector(".work-image");
+      const WorkText = document.querySelector(".work-para");
+      // console.log(WorkImg)
+      // console.log(WorkText)
+
+      elements.forEach((elem, i) => {
+        let img = elem.getAttribute("data-img");
+        let text = elem.getAttribute("data-text");
+        img = Data[i].imgSrc;
+        text = Data[i].text;
+
+        elem.addEventListener("mouseover", function () {
+          WorkImg.src = img;
+          WorkText.textContent = text;
+          elem.classList.add("opacity-100");
+        });
+
+        elem.addEventListener("mouseleave", function () {
+          elem.classList.remove("opacity-100");
+        });
+      });
+
+      window.addEventListener("scroll", function () {
+        const navbar = document.getElementById("navbar");
+        const section2 = document.getElementById("section2");
+        const section2Top = section2.offsetTop;
+
+        if (window.scrollY >= section2Top) {
+          navbar.classList.add("scrolled");
+        } else {
+          navbar.classList.remove("scrolled");
+        }
+      });
+
+      const cursor = document.getElementById("cursor");
+
+      let mouseX = 0,
+        mouseY = 0;
+
+      let cursorX = 0,
+        cursorY = 0;
+
+      document.addEventListener("mousemove", (e) => {
+        mouseX = e.pageX;
+        mouseY = e.pageY;
+      });
+
+      function animate() {
+        cursorX += (mouseX - cursorX) * 0.1;
+        cursorY += (mouseY - cursorY) * 0.1;
+
+        cursor.style.left = cursorX + "px";
+        cursor.style.top = cursorY + "px";
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    </script>
+  </body>
+</html>
